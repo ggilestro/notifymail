@@ -27,7 +27,7 @@ def probe(_test_config=None):
     
     send('', '', _test_config=_test_config or _config)
 
-def send(subject, body, from_name=None, _test_config=None):
+def send(subject, body, from_name=None, _test_config=None, recipient=None):
     """
     Sends a notification email with the specified subject, body, and (optional)
     sender name.
@@ -36,6 +36,8 @@ def send(subject, body, from_name=None, _test_config=None):
     * subject : unicode|str     Subject of the email to send.
     * body : unicode|str        Body of the email to send.
     * from_name : unicode|str   Sender name to use.
+                                Overrides configuration options.
+    * recipient: unicode|str    recipient email address.
                                 Overrides configuration options.
     """
     
@@ -56,7 +58,8 @@ def send(subject, body, from_name=None, _test_config=None):
         from_name = config['from_name']
         if len(from_name) == 0:
             from_name = from_address
-    to_address = config['to_address']
+
+    to_address = recipient or config['to_address']
     
     # Force arguments to be UTF-8 bytestrings
     subject = _force_to_utf8(subject)
@@ -74,8 +77,10 @@ def send(subject, body, from_name=None, _test_config=None):
     if tls:
         smtp.starttls()
     
-    smtp.ehlo()
-    smtp.login(username, password)
+    if username:
+        smtp.ehlo()
+        smtp.login(username, password)
+    
     if _test_config is None:
         smtp.sendmail(from_address, to_address, msg.as_string())
     smtp.quit()
@@ -176,6 +181,10 @@ if __name__ == '__main__':
         '--probe', action="store_true", dest="probe",
         help='check whether mail server is reachable')
     parser.add_option(
+        '-r', '--recipient', dest='recipient',
+        help='recipient email address. Overrides the default recipient',
+        metavar='RECIPIENT')
+    parser.add_option(
         '-s', '--subject', dest='subject',
         help='subject line. Required.',
         metavar='SUBJECT')
@@ -206,7 +215,7 @@ if __name__ == '__main__':
             options.body = sys.stdin.read()
         
         _config = _load_config(interactive=sys.stdin.isatty())
-        send(options.subject, options.body)
+        send(options.subject, options.body, recipient=options.recipient)
 else:
     # Imported from Python script
     _config = _load_config(interactive=False)
