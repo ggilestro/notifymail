@@ -63,6 +63,9 @@ Options:
   -h, --help            show this help message and exit
   --setup               setup mail server configuration
   --probe               check whether mail server is reachable
+  -r RECIPIENT, --recipient=RECIPIENT
+                        recipient email address. Overrides the default
+                        recipient
   -s SUBJECT, --subject=SUBJECT
                         subject line. Required.
   -b BODY, --body=BODY  body. Read from standard input if omitted.
@@ -74,6 +77,13 @@ Options:
 ```
 import notifymail
 notifymail.send("Subject", "Hello World")
+```
+
+To specify a different email address as recipient:
+
+```
+import notifymail
+notifymail.send("Subject", "Hello World", recipient="other@address.tld")
 ```
 
 String arguments can be either Unicode strings or UTF-8 encoded bytestrings.
