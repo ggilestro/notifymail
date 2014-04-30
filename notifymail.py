@@ -27,7 +27,7 @@ def probe(_test_config=None):
     
     send('', '', _test_config=_test_config or _config)
 
-def send(subject, body, from_name=None, _test_config=None, recipient=None):
+def send(subject, body, from_name=None, recipient=None, _test_config=None):
     """
     Sends a notification email with the specified subject, body, and (optional)
     sender name.
@@ -37,7 +37,7 @@ def send(subject, body, from_name=None, _test_config=None, recipient=None):
     * body : unicode|str        Body of the email to send.
     * from_name : unicode|str   Sender name to use.
                                 Overrides configuration options.
-    * recipient: unicode|str    recipient email address.
+    * recipient : unicode|str    recipient email address.
                                 Overrides configuration options.
     """
     
@@ -76,9 +76,9 @@ def send(subject, body, from_name=None, _test_config=None, recipient=None):
     smtp = smtplib.SMTP(hostname, port)
     if tls:
         smtp.starttls()
-    
+
+    smtp.ehlo()
     if username:
-        smtp.ehlo()
         smtp.login(username, password)
     
     if _test_config is None:
@@ -181,10 +181,6 @@ if __name__ == '__main__':
         '--probe', action="store_true", dest="probe",
         help='check whether mail server is reachable')
     parser.add_option(
-        '-r', '--recipient', dest='recipient',
-        help='recipient email address. Overrides the default recipient',
-        metavar='RECIPIENT')
-    parser.add_option(
         '-s', '--subject', dest='subject',
         help='subject line. Required.',
         metavar='SUBJECT')
@@ -196,6 +192,11 @@ if __name__ == '__main__':
         '--from-name', dest='from_name',
         help='sender name. Overrides the default sender name.',
         metavar='NAME')
+    parser.add_option(
+        '-r', '--recipient', dest='recipient',
+        help='recipient email address. Overrides the default recipient',
+        metavar='RECIPIENT')
+
     (options, args) = parser.parse_args()
     
     if options.setup:
